@@ -17,3 +17,10 @@ docker compose up airflow-init
 ```
 docker compose up
 ```
+
+## Connect to Database
+
+```
+docker exec -it horse-racing-prediction-airflow-postgres-1 /bin/bash
+psql -U airflow
+```
