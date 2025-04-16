@@ -25,12 +25,15 @@ Dependencies:
     check_database_exists >> create_race_ids_table
 """
 
+import logging
 import pendulum
 from airflow.models.dag import DAG
 from airflow.operators.python import PythonOperator
 from airflow.providers.postgres.hooks.postgres import PostgresHook
 from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
 
+
+logger = logging.getLogger(__name__)
 
 def check_database_exists():
     """
@@ -63,9 +66,9 @@ def check_database_exists():
 
     if "netkeiba" not in databases:
         cursor.execute("CREATE DATABASE netkeiba;")
-        print("Created database 'netkeiba'")
+        logger.info("Created database 'netkeiba'")
     else:
-        print("Database 'netkeiba' already exists")
+        logger.info("Database 'netkeiba' already exists")
 
 with DAG(
     "postgres_setup_dag",
@@ -89,8 +92,9 @@ with DAG(
         sql="""
             CREATE TABLE IF NOT EXISTS race_ids (
                 race_id BIGSERIAL PRIMARY KEY,
-                kaisai_id SERIAL,
-                kaisai_date SERIAL
+                kaisai_id SERIAL NOT NULL,
+                kaisai_date SERIAL NOT NULL,
+                crawled BOOLEAN DEFAULT false NOT NULL
             );
         """
     )
