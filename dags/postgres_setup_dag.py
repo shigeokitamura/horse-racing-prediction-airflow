@@ -10,8 +10,7 @@ It handles two main tasks:
    - Uses PostgresHook with 'postgres_airflow' connection
 
 2. Table Creation:
-   - Creates 'race_ids' table if it doesn't exist
-   - Table contains columns for race_id (primary key), kaisai_id, and kaisai_date
+   - Creates 'race_ids', 'race_infos', 'race_results', and 'starting_prices' table if it doesn't exist
    - Uses 'postgres_netkeiba' connection
 
 DAG Configuration:
@@ -86,7 +85,7 @@ with DAG(
         python_callable=check_database_exists,
     )
 
-    create_table = SQLExecuteQueryOperator(
+    create_race_ids_table = SQLExecuteQueryOperator(
         task_id="create_race_ids_table",
         conn_id="postgres_netkeiba",
         sql="""
@@ -99,4 +98,65 @@ with DAG(
         """
     )
 
-    check_db >> create_table
+    create_race_infos_table = SQLExecuteQueryOperator(
+        task_id="create_race_infos_table",
+        conn_id="postgres_netkeiba",
+        sql="""
+            CREATE TABLE IF NOT EXISTS race_infos (
+                race_id BIGSERIAL PRIMARY KEY,
+                race_name VARCHAR(255) NOT NULL,
+                race_grade VARCHAR(255),
+                race_time VARCHAR(255) NOT NULL,
+                course VARCHAR(255) NOT NULL,
+                weather VARCHAR(255) NOT NULL,
+                FOREIGN KEY (race_id) REFERENCES race_ids (race_id)
+            );
+            """
+    )
+
+    create_race_results_table = SQLExecuteQueryOperator(
+        task_id="create_race_results_table",
+        conn_id="postgres_netkeiba",
+        sql="""
+            CREATE TABLE IF NOT EXISTS race_results (
+                result_id BIGSERIAL PRIMARY KEY,
+                race_id BIGSERIAL NOT NULL,
+                final_position SMALLSERIAL,
+                bracket_number SMALLSERIAL,
+                post_position SMALLSERIAL,
+                horse_name VARCHAR(255),
+                horse_id BIGSERIAL,
+                age_and_sex VARCHAR(255),
+                jockey_weight REAL,
+                jockey_name VARCHAR(255),
+                finish_time VARCHAR(255),
+                margin VARCHAR(255),
+                positions_at_bends VARCHAR(255),
+                last_3_furlongs REAL,
+                odds REAL,
+                favorite SMALLSERIAL,
+                horse_weight VARCHAR(255),
+                trainer VARCHAR(255),
+                owner VARCHAR(255),
+                prize REAL,
+                FOREIGN KEY (race_id) REFERENCES race_ids (race_id)
+            );
+            """
+    )
+
+    create_starting_prices_table = SQLExecuteQueryOperator(
+        task_id="create_starting_prices_table",
+        conn_id="postgres_netkeiba",
+        sql="""
+            CREATE TABLE IF NOT EXISTS starting_prices (
+                payout_id BIGSERIAL PRIMARY KEY,
+                race_id BIGSERIAL NOT NULL,
+                bet_type VARCHAR(255),
+                result VARCHAR(255),
+                payout INTEGER,
+                FOREIGN KEY (race_id) REFERENCES race_ids (race_id)
+            );
+            """
+    )
+
+    check_db >> create_race_ids_table >> create_race_infos_table >> create_race_results_table >> create_starting_prices_table
