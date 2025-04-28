@@ -47,6 +47,7 @@ logger = logging.getLogger(__name__)
     schedule_interval="@once",
     start_date=pendulum.datetime(2021, 1, 1, tz="UTC"),
     catchup=False,
+    max_active_runs=1,
     doc_md=__doc__,
     params={
         "year": Param(
