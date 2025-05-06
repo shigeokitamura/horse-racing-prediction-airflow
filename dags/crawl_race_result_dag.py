@@ -224,6 +224,7 @@ def crawl_race_result() -> None:
 
         df["race_id"] = [race_id] * len(df)
         df["result_id"] = df.apply(lambda x: f"{x['race_id']}{x['post_position']:02}", axis=1)
+        df = df.dropna(subset=["final_position"])
 
         return df
 
@@ -358,7 +359,7 @@ def crawl_race_result() -> None:
 
         hook = PostgresHook(postgres_conn_id="postgres_netkeiba")
         engine: Engine = hook.get_sqlalchemy_engine()
-        result_table.to_sql("race_results", engine, if_exists="append", index=False)
+        result_table.to_sql("race_results", engine, if_exists="replace", index=False)
 
         return True
 
@@ -379,7 +380,7 @@ def crawl_race_result() -> None:
 
         hook = PostgresHook(postgres_conn_id="postgres_netkeiba")
         engine: Engine = hook.get_sqlalchemy_engine()
-        starting_prices.to_sql("starting_prices", engine, if_exists="append", index=False)
+        starting_prices.to_sql("starting_prices", engine, if_exists="replace", index=False)
 
         return True
 
