@@ -41,10 +41,12 @@ logger = logging.getLogger(__name__)
 
 @dag(
     dag_id="crawl_race_result_dag",
+    concurrency=1,
     default_args={"retries": 0},
     description="Crawl race result",
     schedule_interval="@once",
     start_date=pendulum.datetime(2021, 1, 1, tz="UTC"),
+    max_active_runs=1,
     catchup=False,
     doc_md=__doc__,
     params={
