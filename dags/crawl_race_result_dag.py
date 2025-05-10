@@ -41,7 +41,6 @@ logger = logging.getLogger(__name__)
 
 @dag(
     dag_id="crawl_race_result_dag",
-    concurrency=1,
     default_args={"retries": 0},
     description="Crawl race result",
     schedule_interval="@once",
@@ -361,7 +360,7 @@ def crawl_race_result() -> None:
 
         hook = PostgresHook(postgres_conn_id="postgres_netkeiba")
         engine: Engine = hook.get_sqlalchemy_engine()
-        result_table.to_sql("race_results", engine, if_exists="replace", index=False)
+        result_table.to_sql("race_results", engine, if_exists="append", index=False)
 
         return True
 
@@ -382,7 +381,7 @@ def crawl_race_result() -> None:
 
         hook = PostgresHook(postgres_conn_id="postgres_netkeiba")
         engine: Engine = hook.get_sqlalchemy_engine()
-        starting_prices.to_sql("starting_prices", engine, if_exists="replace", index=False)
+        starting_prices.to_sql("starting_prices", engine, if_exists="append", index=False)
 
         return True
 
