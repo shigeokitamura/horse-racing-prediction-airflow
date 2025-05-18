@@ -214,10 +214,16 @@ def crawl_past_race_ids() -> None:
                 None
             """
 
+            EXCLUDE_RACE_IDS = [
+                201408020304, # No result
+                201805010304, # No result
+            ]
+
             context = get_current_context()
             dry_run: bool = context["dag_run"].conf.get("dry_run")
 
             race_ids: list[int] = target["race_ids"]
+            race_ids = [race_id for race_id in race_ids if race_id not in EXCLUDE_RACE_IDS]
             kaisai_id: int = target["kaisai_id"]
             kaisai_date: int = target["kaisai_date"]
 
